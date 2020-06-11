@@ -36,10 +36,13 @@ public class MyRouter extends RouteBuilder {
 		from("direct:processOrders")
 			.process(new OrdersProcessor())
 			.marshal(jacksonDataFormat)
+			.process(exchange -> {
+				exchange.getOut().setBody(exchange.getIn().getBody(String.class));
+			})
 			.setHeader(Exchange.HTTP_METHOD, simple("POST"))
-			.setHeader(Exchange.CONTENT_TYPE, constant("applicatiton/json"))
-			.to(env.getProperty("application.wms.orders-url"));
-		
+			.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+			.to(env.getProperty("application.wms.orders-url"))
+			.log("Response from WMS: ${body}");
 	}
  
 }
